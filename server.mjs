@@ -4,8 +4,12 @@ import { readFile, realpath, stat } from 'node:fs/promises';
 import { dirname, extname, isAbsolute, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { pipeline } from 'node:stream/promises';
+import { ensureBuild } from './scripts/ensure-build.mjs';
 
-const root = await realpath(resolve(dirname(fileURLToPath(import.meta.url)), 'build'));
+const directory = dirname(fileURLToPath(import.meta.url));
+try { await ensureBuild(directory); }
+catch (error) { console.error('Não foi possível preparar o site:', error.message); process.exit(1); }
+const root = await realpath(resolve(directory, 'build'));
 const headers = Object.fromEntries((await readFile(resolve(root, '_headers'), 'utf8'))
   .split(/\r?\n/).filter(line => /^\s+[^:]+:/.test(line))
   .map(line => { const colon = line.indexOf(':'); return [line.slice(0, colon).trim(), line.slice(colon + 1).trim()]; }));
@@ -61,7 +65,9 @@ const server = createServer(async (request, response) => {
     if (!response.destroyed) response.end();
   }
 });
-server.listen(8080, '0.0.0.0', () => console.log('RDXCompressor disponível em 0.0.0.0:8080'));
+const port = Number(process.env.PORT ?? 8080);
+if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('PORT deve ser um número entre 1 e 65535.');
+server.listen(port, '0.0.0.0', () => console.log(`RDXCompressor disponível em 0.0.0.0:${port}`));
 for (const signal of ['SIGTERM', 'SIGINT']) process.on(signal, () => {
   server.close(error => process.exit(error ? 1 : 0));
   setTimeout(() => process.exit(1), 10_000).unref();

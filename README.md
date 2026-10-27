@@ -45,7 +45,7 @@ Revise os textos institucionais com os dados do responsável e as práticas do p
 
 ## Hospedagem na Discloud
 
-O arquivo `discloud.config` está na raiz. Ele usa o runtime `latest` da Discloud (o projeto requer Node.js 22.12 ou superior), `TYPE=site`, 512 MB de RAM, build com `npm run build` e início com `npm start`. O servidor `server.mjs` escuta em `0.0.0.0:8080`, entrega o HTML individual de cada rota, preserva os cabeçalhos de segurança e retorna a página 404 para endereços inexistentes. Ele só entrega arquivos estáticos; as imagens continuam sendo processadas no navegador.
+O arquivo `discloud.config` está na raiz. Ele usa o runtime `latest` da Discloud (o projeto requer Node.js 22.12 ou superior), `TYPE=site`, 512 MB de RAM, build com `npm run build` e início com `npm start`. O servidor `server.mjs` escuta em `0.0.0.0:8080` por padrão, entrega o HTML individual de cada rota, preserva os cabeçalhos de segurança e retorna a página 404 para endereços inexistentes. Ele só entrega arquivos estáticos; as imagens continuam sendo processadas no navegador. Para testes locais em outra porta, defina `PORT`; na Discloud, mantenha 8080.
 
 1. Reserve um subdomínio na sua conta Discloud e ajuste `ID=rdxcompressor` para o nome reservado, sem `.discloud.app`.
 2. Configure `VITE_SITE_URL` com o endereço público e `VITE_CONTACT_EMAIL` com seu contato nas variáveis do ambiente de build da Discloud. Por exemplo, use `https://rdxcompressor.discloud.app` apenas se esse for o subdomínio reservado. Essas variáveis são incorporadas durante o build; ao alterá-las, gere outro build.
@@ -59,7 +59,13 @@ npm run build:discloud
 npm start
 ```
 
-Abra `http://localhost:8080`. O arquivo `.discloudignore` exclui dependências locais, builds, credenciais e arquivos temporários dos uploads que respeitam esse formato. Se criar um ZIP manualmente, aplique as mesmas exclusões e mantenha `discloud.config` diretamente na raiz do ZIP. Segundo a [documentação da Discloud](https://docs.discloud.com/how-to-host/websites-and-apis), sites precisam de um plano Platinum ou superior. O subdomínio deste arquivo é uma configuração inicial; ele não é reservado automaticamente. Nenhum deploy é executado apenas por criar estes arquivos.
+Abra `http://localhost:8080`. O arquivo `.discloudignore` exclui dependências locais, credenciais e arquivos temporários dos uploads que respeitam esse formato. A pasta de produção `build/` é permitida em uploads locais. Se criar um ZIP manualmente, aplique as mesmas exclusões e mantenha `discloud.config` diretamente na raiz do ZIP. Segundo a [documentação da Discloud](https://docs.discloud.com/how-to-host/websites-and-apis), sites precisam de um plano Platinum ou superior. O subdomínio deste arquivo é uma configuração inicial; ele não é reservado automaticamente. Nenhum deploy é executado apenas por criar estes arquivos.
+
+### Erro `ENOENT: realpath '/home/node/build'` na inicialização
+
+O build pode terminar na etapa de construção, mas a pasta gerada não estar disponível no sistema de arquivos usado ao iniciar a aplicação. O servidor agora verifica o HTML pré-renderizado, a página 404, os cabeçalhos, sitemap, robots.txt e os assets referenciados antes de iniciar. Se algum deles estiver ausente, executa `npm run build` no diretório do projeto e verifica o resultado novamente. Essa verificação funciona tanto com `npm start` quanto com a execução direta de `server.mjs`.
+
+Se o build já está completo, a aplicação inicia sem compilar novamente. Se precisar gerá-lo durante a inicialização, haverá uma espera adicional; mantenha as dependências de desenvolvimento instaladas e as variáveis `VITE_SITE_URL`/`VITE_CONTACT_EMAIL` disponíveis também nessa etapa. Falhas de compilação são exibidas no console com uma mensagem específica. Não é criada uma pasta vazia para esconder o erro.
 
 ### Erro do npm `Cannot read properties of null (reading 'edgesOut')`
 
