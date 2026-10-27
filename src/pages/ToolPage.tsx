@@ -1,0 +1,24 @@
+import { ArrowRight, ArrowLeftRight, BadgeCheck, ChevronDown, Laptop, Maximize, ShieldCheck, SlidersHorizontal, Zap } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import type { PageData } from '../data/pages';
+import { toolPages } from '../data/pages';
+import { AdSlot } from '../components/AdSlot';
+import { ImageTool } from '../components/ImageTool';
+
+export function ToolPage({ page }: { page: PageData }) {
+  return <>
+    <div className="hero-area"><section className="hero container"><div className="eyebrow"><span />MENOS COMPLICAÇÃO, MAIS POSSIBILIDADES</div><h1>{page.path === '/' ? <>Converta suas imagens<br />em <span>segundos.</span></> : page.heading}</h1><p>{page.intro}</p><div className="hero-pills"><span><ShieldCheck size={14} />Privado por natureza</span><span className="pill-dot">·</span><span><Zap size={14} />Direto no navegador</span></div></section>
+    <div className="container tool-container"><ImageTool key={page.path} page={page} /></div></div>
+    <div className="container"><div className="benefits-strip"><div><ShieldCheck size={21} /><span><strong>Seus arquivos são seus</strong><small>Nenhum upload para servidores</small></span></div><div><Zap size={21} /><span><strong>Pronto em poucos cliques</strong><small>Abra, transforme e baixe</small></span></div><div><Laptop size={21} /><span><strong>Em qualquer lugar</strong><small>No computador ou no celular</small></span></div></div><AdSlot />
+      <section className="tools-section" aria-labelledby="tools-title"><div className="section-heading"><div><span className="section-kicker">UMA CAIXA DE FERRAMENTAS, ZERO COMPLICAÇÃO</span><h2 id="tools-title">O que suas imagens precisam?</h2></div><p>Do primeiro ajuste ao arquivo pronto.<br />Tudo no mesmo lugar.</p></div><div className="tool-cards">
+        <Link to="/" className="feature-card"><span className="feature-icon blue"><ArrowLeftRight size={21} /></span><h3>Troque o formato</h3><p>JPG, PNG ou WebP. O formato certo para cada próximo passo.</p><span className="feature-link">Converter imagens<ArrowRight size={16} /></span></Link>
+        <Link to="/comprimir-imagem" className="feature-card"><span className="feature-icon green"><SlidersHorizontal size={21} /></span><h3>Deixe mais leve</h3><p>Reduza o tamanho e encontre o equilíbrio entre qualidade e espaço.</p><span className="feature-link">Comprimir imagens<ArrowRight size={16} /></span></Link>
+        <Link to="/redimensionar-imagem" className="feature-card"><span className="feature-icon purple"><Maximize size={21} /></span><h3>Acerte as dimensões</h3><p>Pixels, proporções ou percentual. Ajuste para o que você precisa.</p><span className="feature-link">Redimensionar imagens<ArrowRight size={16} /></span></Link>
+      </div></section>
+      <section className="how-section"><div className="how-intro"><span className="section-kicker">SIMPLES ASSIM</span><h2>Três passos.<br />E está pronto.</h2><p>Seu tempo é para criar.<br />A parte dos arquivos fica com a gente.</p></div><ol className="steps"><li><span>01</span><div><h3>Escolha suas imagens</h3><p>Arraste, selecione ou cole. Uma imagem ou várias de uma vez.</p></div></li><li><span>02</span><div><h3>Ajuste do seu jeito</h3><p>Escolha o formato, a qualidade ou as dimensões ideais.</p></div></li><li><span>03</span><div><h3>Baixe e siga em frente</h3><p>Confira a prévia e baixe os arquivos, individualmente ou em ZIP.</p></div></li></ol></section>
+      <AdSlot />
+      <section className="knowledge-section"><div className="knowledge-copy"><span className="section-kicker">BOM SABER</span><h2>{page.path === '/' ? 'O formato faz a diferença.' : page.mode === 'compress' ? 'Compressão com números reais.' : page.mode === 'resize' ? 'Mais controle sobre cada pixel.' : 'Uma conversão bem feita começa aqui.'}</h2><p>{page.explanation}</p><ul>{page.tips.map(tip => <li key={tip}><BadgeCheck size={17} /><span>{tip}</span></li>)}</ul><div className="format-links">{toolPages.filter(p => p.source).map(p => <Link key={p.path} to={p.path}>{p.source} <ArrowRight size={12} /> {p.format?.split('/')[1]?.replace('jpeg', 'JPG').toUpperCase()}</Link>)}</div></div><aside className="privacy-card"><span className="privacy-card-icon"><ShieldCheck size={28} strokeWidth={1.6} /></span><span className="section-kicker">PRIVACIDADE DE VERDADE</span><h3>Fica tudo<br />entre você e<br />seu navegador.</h3><p>Seus arquivos não passam por servidores. O processamento acontece localmente e você mantém o controle das suas imagens.</p><Link to="/privacidade">Entenda como funciona<ArrowRight size={15} /></Link><AdSlot variant="sidebar" /></aside></section>
+      <section className="faq-section"><div><span className="section-kicker">SEM DÚVIDAS PELO CAMINHO</span><h2>Perguntas frequentes</h2></div><div className="faq-list">{page.faq.map(item => <details key={item.q}><summary>{item.q}<ChevronDown size={17} /></summary><p>{item.a}</p></details>)}</div></section>
+    </div>
+  </>;
+}
