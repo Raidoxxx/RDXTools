@@ -1,6 +1,6 @@
 {
   "name": "rdxcompressor",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Conversor, compressor e redimensionador privado de imagens",
   "scripts": {
     "start": "node server.mjs",
