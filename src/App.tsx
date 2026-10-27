@@ -6,11 +6,14 @@ import { LegalPage } from './pages/LegalPage';
 import { getPage, legalPages, siteUrl, structuredData } from './data/pages';
 
 export function App() {
-  const { pathname } = useLocation();
+  const { pathname, key } = useLocation();
   const page = getPage(pathname);
   const legal = legalPages.find(p => p.path === pathname.replace(/\/$/, ''));
   const title = page?.title ?? (legal ? `${legal.title} | RDXCompressor` : 'Página não encontrada | RDXCompressor');
   const description = page?.description ?? legal?.description ?? 'Encontre as ferramentas gratuitas do RDXCompressor.';
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [key]);
   useEffect(() => {
     document.title = title;
     const update = (selector: string, value: string) => document.querySelector(selector)?.setAttribute('content', value);
