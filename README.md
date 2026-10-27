@@ -24,7 +24,7 @@ npm run test:e2e
 npm run preview
 ```
 
-O build verifica TypeScript, gera assets e pré-renderiza as 13 páginas públicas e a página 404. `dist/` inclui HTML completo por rota, sitemap e robots.txt. O servidor de preview abre em `http://127.0.0.1:4173`.
+O build verifica TypeScript, gera assets e pré-renderiza as 13 páginas públicas e a página 404. `build/` inclui HTML completo por rota, sitemap e robots.txt. O servidor de preview abre em `http://127.0.0.1:4173`.
 
 Testes de navegador verificam as seis conversões com MIME real, transparência, dimensões, compressão, ZIP com nomes duplicados, downloads, arquivos inválidos, tema, layout mobile e HTML indexável. As capturas de validação ficam em `test-results/`.
 
@@ -39,18 +39,18 @@ VITE_CONTACT_EMAIL=seu-email@seu-dominio.com.br
 
 O domínio padrão `https://rdxcompressor.example` é um marcador, não um endereço público. O build alerta quando ele é utilizado. Sem e-mail configurado, a página de contato informa que o canal ainda não está disponível; não há formulário com envio simulado.
 
-Execute `npm run build` novamente e publique o conteúdo de `dist/` em uma hospedagem estática com HTTPS. Configure a resolução de `/rota` para `/rota/index.html` e use `404.html` nas rotas inexistentes. Não redirecione todas as rotas para a homepage: cada rota já tem HTML próprio. No Netlify, os diretórios de páginas e o arquivo `_headers` são utilizados automaticamente. Em outros provedores, aplique os cabeçalhos de `public/_headers` na configuração da hospedagem.
+Execute `npm run build` novamente e publique o conteúdo de `build/` em uma hospedagem estática com HTTPS. Configure a resolução de `/rota` para `/rota/index.html` e use `404.html` nas rotas inexistentes. Não redirecione todas as rotas para a homepage: cada rota já tem HTML próprio. No Netlify, os diretórios de páginas e o arquivo `_headers` são utilizados automaticamente. Em outros provedores, aplique os cabeçalhos de `public/_headers` na configuração da hospedagem.
 
 Revise os textos institucionais com os dados do responsável e as práticas do provedor escolhido. O projeto não foi publicado automaticamente.
 
 ## Hospedagem na Discloud
 
-O arquivo `discloud.config` está na raiz. Ele usa Node.js 22, `TYPE=site`, 512 MB de RAM, build com `npm run build:discloud` e início com `npm start`. O servidor `server.mjs` escuta em `0.0.0.0:8080`, entrega o HTML individual de cada rota, preserva os cabeçalhos de segurança e retorna a página 404 para endereços inexistentes. Ele só entrega arquivos estáticos; as imagens continuam sendo processadas no navegador.
+O arquivo `discloud.config` está na raiz. Ele usa o runtime `latest` da Discloud (o projeto requer Node.js 22.12 ou superior), `TYPE=site`, 512 MB de RAM, build com `npm run build` e início com `npm start`. O servidor `server.mjs` escuta em `0.0.0.0:8080`, entrega o HTML individual de cada rota, preserva os cabeçalhos de segurança e retorna a página 404 para endereços inexistentes. Ele só entrega arquivos estáticos; as imagens continuam sendo processadas no navegador.
 
 1. Reserve um subdomínio na sua conta Discloud e ajuste `ID=rdxcompressor` para o nome reservado, sem `.discloud.app`.
 2. Configure `VITE_SITE_URL` com o endereço público e `VITE_CONTACT_EMAIL` com seu contato nas variáveis do ambiente de build da Discloud. Por exemplo, use `https://rdxcompressor.discloud.app` apenas se esse for o subdomínio reservado. Essas variáveis são incorporadas durante o build; ao alterá-las, gere outro build.
 3. Envie o projeto pela integração com GitHub ou pelo método de upload da Discloud. Inclua os arquivos fonte, `package.json`, `package-lock.json`, `discloud.config`, `server.mjs` e configurações da ferramenta. Não use instalação com `--omit=dev`: o build precisa das dependências de desenvolvimento.
-4. A Discloud executará o build e depois iniciará o servidor. O resultado desse build fica em `build/`, separado de `dist/`, que a plataforma reserva para seu fluxo interno.
+4. A Discloud executará o build e depois iniciará o servidor. Tanto `npm run build` quanto `npm run build:discloud` geram o resultado em `build/`. Isso também atende integrações que executam automaticamente `npm run build --if-present`. A pasta `dist/` fica disponível para o uso interno da plataforma.
 
 Para conferir localmente:
 
@@ -60,6 +60,12 @@ npm start
 ```
 
 Abra `http://localhost:8080`. O arquivo `.discloudignore` exclui dependências locais, builds, credenciais e arquivos temporários dos uploads que respeitam esse formato. Se criar um ZIP manualmente, aplique as mesmas exclusões e mantenha `discloud.config` diretamente na raiz do ZIP. Segundo a [documentação da Discloud](https://docs.discloud.com/how-to-host/websites-and-apis), sites precisam de um plano Platinum ou superior. O subdomínio deste arquivo é uma configuração inicial; ele não é reservado automaticamente. Nenhum deploy é executado apenas por criar estes arquivos.
+
+### Erro do npm `Cannot read properties of null (reading 'edgesOut')`
+
+Essa mensagem corresponde a falhas conhecidas do resolvedor de peers do npm 10. O `.npmrc` deste projeto usa `legacy-peer-deps=true` para evitar a resolução automática de peers opcionais. React e Vite, necessários ao projeto, continuam explicitamente declarados. `include=dev` mantém as ferramentas necessárias ao build. O Vitest está fixado na versão validada, e o lockfile deve acompanhar o código.
+
+Se o instalador da integração GitHub copiar apenas `package.json` antes de executar `npm install`, ele poderá não ler o `.npmrc`. Nesse caso, adicione `NPM_CONFIG_LEGACY_PEER_DEPS=true` e `NPM_CONFIG_INCLUDE=dev` nas variáveis de ambiente do **build** no painel da Discloud, antes da instalação, e reconstrua o aplicativo. Adicionar a flag só ao comando `BUILD` não resolve uma falha que acontece no `npm install` anterior.
 
 ## Como funciona
 

@@ -2,7 +2,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { render, routes, origin } from '../.prerender/entry-server.js';
 
-const outputDir = process.argv[2] ?? 'dist';
+const outputDir = process.argv[2] ?? 'build';
 const template = await readFile(join(outputDir, 'index.html'), 'utf8');
 for (const path of [...routes, '/404']) {
   const { html, head } = render(path);
