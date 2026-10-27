@@ -7,6 +7,8 @@ import { pipeline } from 'node:stream/promises';
 import { ensureBuild } from './scripts/ensure-build.mjs';
 
 const directory = dirname(fileURLToPath(import.meta.url));
+const { version } = JSON.parse(await readFile(resolve(directory, 'package.json'), 'utf8'));
+console.log(`RDXCompressor v${version} | recuperação automática do build habilitada`);
 try { await ensureBuild(directory); }
 catch (error) { console.error('Não foi possível preparar o site:', error.message); process.exit(1); }
 const root = await realpath(resolve(directory, 'build'));
@@ -40,6 +42,7 @@ async function findFile(pathname) {
   }
 }
 const server = createServer(async (request, response) => {
+  response.setHeader('X-RDX-Version', version);
   for (const [name, value] of Object.entries(headers)) response.setHeader(name, value);
   if (!['GET', 'HEAD'].includes(request.method)) {
     response.writeHead(405, { Allow: 'GET, HEAD', 'Content-Type': 'text/plain; charset=utf-8' });
