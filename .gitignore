@@ -1,5 +1,6 @@
 node_modules/
 dist/
+build/
 .prerender/
 .npm-cache/
 test-results/

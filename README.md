@@ -43,6 +43,24 @@ Execute `npm run build` novamente e publique o conteúdo de `dist/` em uma hospe
 
 Revise os textos institucionais com os dados do responsável e as práticas do provedor escolhido. O projeto não foi publicado automaticamente.
 
+## Hospedagem na Discloud
+
+O arquivo `discloud.config` está na raiz. Ele usa Node.js 22, `TYPE=site`, 512 MB de RAM, build com `npm run build:discloud` e início com `npm start`. O servidor `server.mjs` escuta em `0.0.0.0:8080`, entrega o HTML individual de cada rota, preserva os cabeçalhos de segurança e retorna a página 404 para endereços inexistentes. Ele só entrega arquivos estáticos; as imagens continuam sendo processadas no navegador.
+
+1. Reserve um subdomínio na sua conta Discloud e ajuste `ID=rdxcompressor` para o nome reservado, sem `.discloud.app`.
+2. Configure `VITE_SITE_URL` com o endereço público e `VITE_CONTACT_EMAIL` com seu contato nas variáveis do ambiente de build da Discloud. Por exemplo, use `https://rdxcompressor.discloud.app` apenas se esse for o subdomínio reservado. Essas variáveis são incorporadas durante o build; ao alterá-las, gere outro build.
+3. Envie o projeto pela integração com GitHub ou pelo método de upload da Discloud. Inclua os arquivos fonte, `package.json`, `package-lock.json`, `discloud.config`, `server.mjs` e configurações da ferramenta. Não use instalação com `--omit=dev`: o build precisa das dependências de desenvolvimento.
+4. A Discloud executará o build e depois iniciará o servidor. O resultado desse build fica em `build/`, separado de `dist/`, que a plataforma reserva para seu fluxo interno.
+
+Para conferir localmente:
+
+```sh
+npm run build:discloud
+npm start
+```
+
+Abra `http://localhost:8080`. O arquivo `.discloudignore` exclui dependências locais, builds, credenciais e arquivos temporários dos uploads que respeitam esse formato. Se criar um ZIP manualmente, aplique as mesmas exclusões e mantenha `discloud.config` diretamente na raiz do ZIP. Segundo a [documentação da Discloud](https://docs.discloud.com/how-to-host/websites-and-apis), sites precisam de um plano Platinum ou superior. O subdomínio deste arquivo é uma configuração inicial; ele não é reservado automaticamente. Nenhum deploy é executado apenas por criar estes arquivos.
+
 ## Como funciona
 
 - Entradas PNG, JPG e WebP validadas pela assinatura do arquivo, não só pela extensão.

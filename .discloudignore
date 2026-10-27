@@ -1,0 +1,13 @@
+.git/
+node_modules/
+.npm-cache/
+.prerender/
+dist/
+build/
+graphify-out/
+test-results/
+playwright-report/
+.env
+.env.*
+!.env.example
+*.zip

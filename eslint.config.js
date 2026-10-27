@@ -5,7 +5,7 @@ import refresh from 'eslint-plugin-react-refresh';
 import globals from 'globals';
 
 export default tseslint.config(
-  { ignores: ['dist', '.prerender', 'node_modules', '.npm-cache', 'graphify-out', 'test-results', 'playwright-report'] },
+  { ignores: ['dist', 'build', '.prerender', 'node_modules', '.npm-cache', 'graphify-out', 'test-results', 'playwright-report'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   { files: ['**/*.{ts,tsx}'], languageOptions: { globals: { ...globals.browser, ...globals.node, ...globals.worker } }, plugins: { 'react-hooks': hooks, 'react-refresh': refresh }, rules: { ...hooks.configs.recommended.rules, 'react-refresh/only-export-components': ['warn', { allowConstantExport: true }] } },
