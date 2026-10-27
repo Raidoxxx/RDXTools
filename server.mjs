@@ -1,4 +1,5 @@
 import { createServer } from 'node:http';
+import { randomBytes } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import { readFile, realpath, stat } from 'node:fs/promises';
 import { dirname, extname, isAbsolute, relative, resolve } from 'node:path';
@@ -55,12 +56,22 @@ const server = createServer(async (request, response) => {
     const found = await findFile(pathname);
     const file = found ?? { path: resolve(root, '404.html'), size: (await stat(resolve(root, '404.html'))).size };
     const immutable = found && relative(root, file.path).replace(/\\/g, '/').startsWith('assets/');
+    let html;
+    if (extname(file.path) === '.html') {
+      const nonce = randomBytes(18).toString('base64');
+      html = (await readFile(file.path, 'utf8')).replace(/<script\b/gi, `<script nonce="${nonce}"`);
+      response.setHeader('Content-Security-Policy', headers['Content-Security-Policy'].replace(
+        /script-src [^;]+/,
+        `script-src 'nonce-${nonce}' 'unsafe-inline' 'unsafe-eval' 'strict-dynamic' https:`,
+      ));
+    }
     response.writeHead(found ? 200 : 404, {
       'Content-Type': mimeTypes[extname(file.path)] ?? 'application/octet-stream',
-      'Content-Length': file.size,
+      'Content-Length': html === undefined ? file.size : Buffer.byteLength(html),
       'Cache-Control': immutable ? 'public, max-age=31536000, immutable' : 'no-cache',
     });
     if (request.method === 'HEAD') { response.end(); return; }
+    if (html !== undefined) { response.end(html); return; }
     await pipeline(createReadStream(file.path), response);
   } catch (error) {
     if (error.code !== 'ERR_STREAM_PREMATURE_CLOSE') console.error('Falha ao servir arquivo:', error.message);

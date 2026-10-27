@@ -3,6 +3,14 @@ import JSZip from 'jszip';
 import { readFile } from 'node:fs/promises';
 import { deflateSync } from 'node:zlib';
 
+const ADSENSE_URL = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4579887849659560';
+test.beforeEach(async ({ page }) => {
+  // Keep automated tests from requesting real ads or generating ad impressions.
+  await page.route(ADSENSE_URL, route => route.fulfill({
+    contentType: 'application/javascript', headers: { 'access-control-allow-origin': '*' }, body: '',
+  }));
+});
+
 function tinyPNG() {
   function chunk(type: string, bytes: Buffer) {
     const content = Buffer.concat([Buffer.from(type), bytes]);
@@ -155,9 +163,10 @@ test('compressão JPG reduz o tamanho e informa a economia real', async ({ page 
   await expect(card.locator('.saving')).toContainText(`${Math.round((1 - result.length / file.buffer.length) * 100)}%`);
 });
 
-test('upload por arrastar e colar funciona sem rede externa', async ({ page }) => {
+test('upload por arrastar e colar não envia imagens à rede', async ({ page, baseURL }) => {
   const external: string[] = [];
-  page.on('request', request => { if (/^https?:/.test(request.url()) && !request.url().startsWith('http://127.0.0.1:4173')) external.push(request.url()); });
+  const baseOrigin = new URL(baseURL!).origin;
+  page.on('request', request => { if (/^https?:/.test(request.url()) && new URL(request.url()).origin !== baseOrigin) external.push(request.url()); });
   await page.goto('/');
   await page.evaluate(() => {
     const canvas = document.createElement('canvas'); canvas.width = canvas.height = 10;
@@ -175,7 +184,7 @@ test('upload por arrastar e colar funciona sem rede externa', async ({ page }) =
   await expect(page.locator('.file-card')).toHaveCount(2);
   await page.getByRole('button', { name: 'Converter imagens', exact: true }).click();
   await expect(page.locator('.file-card.done')).toHaveCount(2);
-  expect(external).toEqual([]);
+  expect(external).toEqual([ADSENSE_URL]);
 });
 
 test('fallback Canvas funciona sem OffscreenCanvas', async ({ page }) => {

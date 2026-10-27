@@ -86,7 +86,7 @@ Se o instalador da integração GitHub copiar apenas `package.json` antes de exe
 - O navegador pode remover metadados e perfis de cor ao recodificar. Animações viram imagens estáticas. Converter uma imagem não recupera detalhes perdidos anteriormente.
 - URLs de prévia são liberadas ao remover arquivos, limpar a lista ou desmontar a ferramenta. Bitmaps e canvases são liberados após cada tarefa.
 - ZIP é importado sob demanda e mantém nomes únicos em caso de duplicatas.
-- Fontes Inter e Sora são servidas localmente. Nenhum script de anúncio ou analytics está ativo. A preferência de tema é o único valor armazenado localmente pelo aplicativo.
+- Fontes Inter e Sora são servidas localmente. O Google AdSense está integrado para anúncios automáticos. A preferência de tema é o único valor armazenado localmente pelo código próprio do aplicativo; a rede de publicidade pode utilizar cookies e outros identificadores conforme suas configurações e o consentimento aplicável.
 
 ## Estrutura
 
@@ -104,7 +104,13 @@ tests/           Testes reais de navegador com Playwright
 
 ## Publicidade e consentimento
 
-`AdSlot` reserva dimensões sem carregar anúncios: abaixo da ferramenta, entre seções e em espaço lateral nas telas grandes. Não existem botões de download falsos ou anúncios bloqueando controles. Para ativar uma rede no futuro, configure e obtenha as aprovações necessárias, integre uma solução de consentimento adequada e impeça que scripts dependentes de consentimento carreguem antes da escolha do visitante. Atualize a política de privacidade com as práticas reais. A aprovação do AdSense não é garantida.
+O código de anúncios automáticos do Google AdSense está no `<head>` de `index.html`, com o cliente `ca-pub-4579887849659560`. A pré-renderização replica o código uma única vez em cada página. O arquivo `public/ads.txt` publica a autorização para `pub-4579887849659560`. A exibição depende do status do site e das configurações da conta no AdSense; inserir o código não garante aprovação nem anúncios imediatamente.
+
+O servidor adiciona um nonce criptográfico novo a cada resposta HTML, aplica esse nonce aos scripts e usa `strict-dynamic` conforme a [orientação de CSP do Google AdSense](https://support.google.com/adsense/answer/16283098). Os cabeçalhos permitem os recursos HTTPS necessários aos anúncios, mantendo bloqueios de objetos e enquadramento do site. Em hospedagem estática, `_headers` fornece uma política de compatibilidade sem nonce; uma política estrita exige nonce dinâmico na hospedagem.
+
+No painel do AdSense, ative os anúncios automáticos, revise formatos e configure áreas excluídas para proteger a ferramenta e seus controles. Configure também as mensagens de privacidade e uma CMP certificada quando exigida para o público atendido. O projeto não cria um banner próprio que simule essa certificação. A política de privacidade descreve a integração com o Google; revise-a com as configurações efetivamente utilizadas.
+
+`AdSlot` continua reservando espaços de layout e não solicita blocos manuais: o código fornecido é de anúncios automáticos. Para preencher posições específicas, são necessários os IDs de blocos gerados na conta. A verificação de inicialização usa a versão do pacote para reconstruir HTML antigo após uma atualização.
 
 ## Referências técnicas
 

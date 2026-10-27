@@ -3,6 +3,7 @@ import { join, resolve } from 'node:path';
 import { render, routes, origin } from '../.prerender/entry-server.js';
 
 const outputDir = process.argv[2] ?? 'build';
+const { version } = JSON.parse(await readFile('package.json', 'utf8'));
 const template = await readFile(join(outputDir, 'index.html'), 'utf8');
 for (const path of [...routes, '/404']) {
   const { html, head } = render(path);
@@ -13,5 +14,6 @@ for (const path of [...routes, '/404']) {
 }
 await writeFile(join(outputDir, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${routes.map(path => `<url><loc>${origin}${path}</loc></url>`).join('')}</urlset>`);
 await writeFile(join(outputDir, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${origin}/sitemap.xml\n`);
+await writeFile(join(outputDir, '.rdx-build.json'), JSON.stringify({ version }));
 console.log(`Pré-renderização concluída: ${routes.length} páginas e 404, sitemap e robots.txt.`);
 if (origin.includes('.example')) console.warn('Antes de publicar, configure VITE_SITE_URL com o domínio real e execute o build novamente.');

@@ -7,6 +7,11 @@ async function buildIsReady(directory) {
   try {
     await Promise.all(['index.html', '404.html', '_headers', 'sitemap.xml', 'robots.txt']
       .map(file => access(resolve(root, file))));
+    const [release, app] = await Promise.all([
+      readFile(resolve(root, '.rdx-build.json'), 'utf8'),
+      readFile(resolve(directory, 'package.json'), 'utf8'),
+    ]);
+    if (JSON.parse(release).version !== JSON.parse(app).version) return false;
     const html = await readFile(resolve(root, 'index.html'), 'utf8');
     if (html.includes('<!--app-html-->') || !html.includes('data-route="/"')) return false;
     const assets = [...html.matchAll(/(?:src|href)="(\/assets\/[^"?#]+)"/g)];
@@ -14,7 +19,7 @@ async function buildIsReady(directory) {
     await Promise.all(assets.map(([, asset]) => access(resolve(root, asset.slice(1)))));
     return true;
   } catch (error) {
-    if (['ENOENT', 'ENOTDIR'].includes(error.code)) return false;
+    if (['ENOENT', 'ENOTDIR'].includes(error.code) || error instanceof SyntaxError) return false;
     throw error;
   }
 }
